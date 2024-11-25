@@ -1,0 +1,162 @@
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Text
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+# Country Table
+class Country(Base):
+    __tablename__ = 'countries'
+    CountryID = Column(Integer, primary_key=True)
+    CountryCode = Column(String, unique=True)
+    CountryName = Column(String)
+    
+    # Relationships
+    plants = relationship("Plants", back_populates="country")
+
+# Habitat Table
+class Habitat(Base):
+    __tablename__ = 'habitats'
+    HabitatID = Column(Integer, primary_key=True)
+    HabitatType = Column(String)
+    GeographicCoords = Column(String)  # Could store GPS coordinates as a string
+    Temperature = Column(Float)
+    Humidity = Column(Float)
+    Pollutants = Column(String)  # List of pollutants in habitat
+    
+    plants = relationship("Plants", back_populates="habitat")
+
+# Conservation Status Table
+class ConservationStatus(Base):
+    __tablename__ = 'conservation_status'
+    StatusID = Column(Integer, primary_key=True)
+    Status = Column(String)  # e.g., endangered, vulnerable, etc.
+    Year = Column(Integer)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    
+    plant = relationship("Plants", back_populates="conservation_status")
+
+# Plants Table
+class Plants(Base):
+    __tablename__ = 'plants'
+    PlantID = Column(Integer, primary_key=True)
+    ScientificName = Column(String)
+    CommonName = Column(String)
+    PlantFamily = Column(String)
+    VernacularName = Column(String)
+    EnglishName = Column(String)
+    Region = Column(String)
+    CountryCode = Column(String, ForeignKey('countries.CountryCode'))
+    HabitatID = Column(Integer, ForeignKey('habitats.HabitatID'))
+    
+    # Relationships
+    country = relationship("Country", back_populates="plants")
+    habitat = relationship("Habitat", back_populates="plants")
+    conservation_status = relationship("ConservationStatus", back_populates="plant")
+    other_uses = relationship("OtherUses", back_populates="plant")
+    chemical_properties = relationship("ChemicalProperties", back_populates="plant")
+    medicinal_uses = relationship("MedicinalUses", back_populates="plant")
+    pharmacological_effects = relationship("PharmacologicalEffects", back_populates="plant")
+    toxicological_effects = relationship("ToxicologicalEffects", back_populates="plant")
+    herbal_preparations = relationship("HerbalPreparations", back_populates="plant")
+
+# Other Uses Table
+class OtherUses(Base):
+    __tablename__ = 'other_uses'
+    OtherUseID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    Category = Column(String)
+    SubCategory = Column(String)
+    
+    plant = relationship("Plants", back_populates="other_uses")
+
+# Chemical Properties Table
+class ChemicalProperties(Base):
+    __tablename__ = 'chemical_properties'
+    ChemicalID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    ChemicalName = Column(String)
+    CASRegistryNumber = Column(String)
+    IUPACName = Column(String)
+    Smiles = Column(String)
+    MolecularWeight = Column(Float)
+    Category = Column(String)
+    SubCategory = Column(String)
+    
+    plant = relationship("Plants", back_populates="chemical_properties")
+
+# Medicinal Uses Table
+class MedicinalUses(Base):
+    __tablename__ = 'medicinal_uses'
+    MedicinalUseID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    Category = Column(String)
+    SubCategory = Column(String)
+    RouteOfAdministration = Column(String)
+    PreparationForm = Column(String)
+    UseDescription = Column(Text)
+    
+    plant = relationship("Plants", back_populates="medicinal_uses")
+
+# Pharmacological Effects Table
+class PharmacologicalEffects(Base):
+    __tablename__ = 'pharmacological_effects'
+    EffectID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    EffectType = Column(String)
+    Description = Column(Text)
+    CompoundID = Column(Integer, ForeignKey('chemical_properties.ChemicalID'))
+    
+    plant = relationship("Plants", back_populates="pharmacological_effects")
+    compound = relationship("ChemicalProperties")
+
+# Toxicological Effects Table
+class ToxicologicalEffects(Base):
+    __tablename__ = 'toxicological_effects'
+    ToxicEffectID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    EffectType = Column(String)
+    Description = Column(Text)
+    Severity = Column(String)
+    
+    plant = relationship("Plants", back_populates="toxicological_effects")
+
+# Herbal Preparations Table
+class HerbalPreparations(Base):
+    __tablename__ = 'herbal_preparations'
+    PreparationID = Column(Integer, primary_key=True)
+    PlantID = Column(Integer, ForeignKey('plants.PlantID'))
+    PreparationMethod = Column(String)
+    Ingredients = Column(String)
+    Dose = Column(String)
+    
+    plant = relationship("Plants", back_populates="herbal_preparations")
+
+# Create the database engine
+engine = create_engine('sqlite:///plants_database.db', echo=True)
+
+# Create all tables in the database
+Base.metadata.create_all(engine)
+
+# Create a session
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# Example of adding a new plant
+new_plant = Plants(
+    ScientificName="Hypericum perforatum",
+    CommonName="St. John's Wort",
+    PlantFamily="Hypericaceae",
+    VernacularName="St. John's Wort",
+    EnglishName="St. John's Wort",
+    Region="Europe",
+    CountryCode="EU",
+    HabitatID=1
+)
+
+# Add the plant to the session and commit
+session.add(new_plant)
+session.commit()
+
+# Close the session
+session.close()
