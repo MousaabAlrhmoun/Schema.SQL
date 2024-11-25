@@ -1,0 +1,128 @@
+-- Country Table
+CREATE TABLE Country (
+    CountryID INT PRIMARY KEY,
+    CountryCode VARCHAR(10) UNIQUE NOT NULL,
+    CountryName VARCHAR(100) NOT NULL
+);
+
+-- Habitat Table
+CREATE TABLE Habitat (
+    HabitatID INT PRIMARY KEY,
+    Attributes TEXT,
+    HabitatType VARCHAR(50),
+    GeographicCoords VARCHAR(100),
+    CountryID INT,
+    FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+);
+
+-- Conservation Status Table
+CREATE TABLE ConservationStatus (
+    StatusID INT PRIMARY KEY,
+    PlantID INT,
+    Status VARCHAR(50),
+    Year INT,
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Studies Table
+CREATE TABLE Studies (
+    StudyID INT PRIMARY KEY,
+    StudyTitle VARCHAR(255),
+    Author TEXT,
+    YearOfStudy INT,
+    CountryCode VARCHAR(10),
+    BalkanCode VARCHAR(10),
+    ManuscriptCode VARCHAR(50),
+    PlantID INT,
+    FOREIGN KEY (CountryCode) REFERENCES Country(CountryCode),
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Plants Table
+CREATE TABLE Plants (
+    PlantID INT PRIMARY KEY,
+    ScientificName VARCHAR(255) NOT NULL,
+    PlantFamily VARCHAR(100),
+    VernacularName VARCHAR(255),
+    EnglishName VARCHAR(255),
+    Region VARCHAR(255),
+    CountryCode VARCHAR(10),
+    FOREIGN KEY (CountryCode) REFERENCES Country(CountryCode)
+);
+
+-- Environmental Data Table
+CREATE TABLE EnvironmentalData (
+    DataID INT PRIMARY KEY,
+    HabitatID INT,
+    Temperature FLOAT,
+    Humidity FLOAT,
+    Precipitation FLOAT,
+    PollutantLevels TEXT,
+    FOREIGN KEY (HabitatID) REFERENCES Habitat(HabitatID)
+);
+
+-- Other Uses Table
+CREATE TABLE OtherUses (
+    OtherUseID INT PRIMARY KEY,
+    PlantID INT,
+    Category VARCHAR(50),
+    SubCategory VARCHAR(50),
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Medicinal Uses Table
+CREATE TABLE MedicinalUses (
+    MedicinalUseID INT PRIMARY KEY,
+    PlantID INT,
+    Category VARCHAR(50),
+    SubCategory VARCHAR(50),
+    RouteOfAdministration VARCHAR(50),
+    PreparationForm VARCHAR(50),
+    UseDescription TEXT,
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Chemical Properties Table
+CREATE TABLE ChemicalProperties (
+    ChemicalID INT PRIMARY KEY,
+    PlantID INT,
+    CASRegistryNumber VARCHAR(50),
+    ChemicalName VARCHAR(255),
+    IUPACName VARCHAR(255),
+    MolecularWeight FLOAT,
+    Category VARCHAR(50),
+    SubCategory VARCHAR(50),
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Pharmacological Effects Table
+CREATE TABLE PharmacologicalEffects (
+    EffectID INT PRIMARY KEY,
+    PlantID INT,
+    EffectType VARCHAR(50),
+    Description TEXT,
+    CompoundID INT,
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID),
+    FOREIGN KEY (CompoundID) REFERENCES ChemicalProperties(ChemicalID)
+);
+
+-- Toxicological Effects Table
+CREATE TABLE ToxicologicalEffects (
+    ToxicEffectID INT PRIMARY KEY,
+    PlantID INT,
+    EffectType VARCHAR(50),
+    Description TEXT,
+    Severity VARCHAR(50),
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
+
+-- Herbal Preparations Table
+CREATE TABLE HerbalPreparations (
+    PreparationID INT PRIMARY KEY,
+    PlantID INT,
+    PreparationForm VARCHAR(50),
+    Ingredients TEXT,
+    PreparationMethod VARCHAR(50),
+    Dose VARCHAR(50),
+    FOREIGN KEY (PlantID) REFERENCES Plants(PlantID)
+);
