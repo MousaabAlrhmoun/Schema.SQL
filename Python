@@ -145,9 +145,9 @@ session = Session()
 # Example of adding a new plant
 new_plant = Plants(
     ScientificName="Hypericum perforatum",
-    CommonName="St. John's Wort",
+    CommonName="Zeta",
     PlantFamily="Hypericaceae",
-    VernacularName="St. John's Wort",
+    VernacularName="Mays",
     EnglishName="St. John's Wort",
     Region="Europe",
     CountryCode="EU",
